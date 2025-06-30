@@ -1,0 +1,29 @@
+ssh node-red
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+npm install -g --unsafe-perm node-red@3.0.2
+
+ssh mosquitto
+sudo nano /etc/mosquitto/mosquitto.conf
+sudo netstat -tulnp | grep mosquito
+
+ssh mysql
+mysql -h <RDS-ENDPOINT> -P 3306 -u admin -p
+
+fuction 1
+msg.topic = "INSERT INTO data_sensor (suhu, kelembapan) VALUES (" + msg.payload.temp + ", " + msg.payload.humidity + ")";
+
+fuction 2
+// Format isi file, contoh:
+let waktu = new Date().toISOString();
+msg.payload = "Waktu: " + waktu + "\nSuhu: " + msg.payload.temp + " C\nKelembapan: " + msg.payload.humidity + " %";
+
+// Set filename dinamis
+msg.filename = "Log-" + Date.now() + ".txt";
+
+fuction 3
+msg.payload = JSON.stringify({
+    waktu: new Date().toISOString(),
+    suhu: msg.payload.temp,
+    kelembapan: msg.payload.humidity
+});
+msg.topic = "data_sensor";
