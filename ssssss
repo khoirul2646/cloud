@@ -1,24 +1,33 @@
-ssh node-red
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
-npm install -g --unsafe-perm node-red@3.0.2
-
 ssh mosquitto
 sudo nano /etc/mosquitto/mosquitto.conf
 sudo netstat -tulnp | grep mosquito
 
+cek client mosquitto
+sudo journalctl -u mosquitto -f
+
+ssh nodered
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+npm install -g --unsafe-perm node-red@3.0.2
+
 ssh mysql
 mysql -h <RDS-ENDPOINT> -P 3306 -u admin -p
+use sensor_db;
+select *from data_sensor;
+
+node-red-dasboard
+node-red-node-mysql
+node-red-contrib-s3
+node-red-contrib-redis
 
 fuction 1
 msg.topic = "INSERT INTO data_sensor (suhu, kelembapan) VALUES (" + msg.payload.temp + ", " + msg.payload.humidity + ")";
 
 fuction 2
-// Format isi file, contoh:
+msg.filename = "Log-" + Date.now() + ".txt";
 let waktu = new Date().toISOString();
 msg.payload = "Waktu: " + waktu + "\nSuhu: " + msg.payload.temp + " C\nKelembapan: " + msg.payload.humidity + " %";
-
-// Set filename dinamis
 msg.filename = "Log-" + Date.now() + ".txt";
+
 
 fuction 3
 msg.payload = JSON.stringify({
@@ -27,3 +36,38 @@ msg.payload = JSON.stringify({
     kelembapan: msg.payload.humidity
 });
 msg.topic = "data_sensor";
+
+ssh rds
+sudo yum install -y nfs-utils
+sudo mkdir /logs
+sudo chmod 777 /logs
+sudo mount -t nfs4 fs-xxxxx.efs.ap-southeast-2.amazonaws.com:/ /logs
+Tes:
+echo "Tes simpan ke EFS" > /logs/tes.txt
+cat /logs/tes.txt
+masuk ke file logs:
+cd /logs
+ls
+cat /logs/log-dummy.txt
+Mount Permanen (Opsional)
+Edit /etc/fstab:
+fs-xxxxx.efs.ap-southeast-2.amazonaws.com:/ /logs nfs4 defaults,_netdev 0 0
+
+ssh redis
+sudo amazon-linux-extras enable epel
+sudo yum install -y redis
+sudo systemctl start redis
+redis-cli ping
+
+
+Redis Set  
+Options :
+{
+  "host": "localhost",
+  "port": 6379
+}
+
+cek redis 
+redis-cli
+LRANGE data_sensor 0 -1
+
